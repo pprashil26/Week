@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weekly Planner</title>
+<title>Analog Weekly Planner</title>
 <style>
-/* Reset & base styles */
+/* Base styles */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
 body { background: #f4f4f4; padding: 20px; }
 h2 { margin: 20px 0; text-align: center; }
@@ -14,17 +14,16 @@ h2 { margin: 20px 0; text-align: center; }
 .week-container {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 40px;
   max-width: 900px;
   margin: 0 auto;
 }
 
-/* Single week row */
+/* Week rows */
 .week-row {
   display: flex;
   gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 5px;
+  justify-content: center;
 }
 
 /* Day card */
@@ -33,24 +32,24 @@ h2 { margin: 20px 0; text-align: center; }
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  min-width: 130px;
+  width: 130px;  /* Fixed width like Today Tool */
   display: flex;
   flex-direction: column;
   gap: 10px;
   border-left: 4px solid transparent;
-  flex-shrink: 0;
 }
 
+/* Highlight today */
 .day-card.today {
-  border-left-color: #4CAF50; /* Highlight today */
+  border-left-color: #4CAF50;
 }
 
 /* Day header */
 .day-header {
   font-weight: bold;
+  font-size: 14px;
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
 }
 
 /* Task list */
@@ -104,14 +103,17 @@ h2 { margin: 20px 0; text-align: center; }
 .add-task-input button:hover {
   background: #45a049;
 }
+
+/* Center Saturday & Sunday */
+.week-row.second-row {
+  justify-content: center;
+}
 </style>
 </head>
 <body>
 
-<h2>Weekly Planner</h2>
-<div class="week-container" id="weekContainer">
-  <!-- Weeks will be rendered here -->
-</div>
+<h2>Analog Weekly Planner</h2>
+<div class="week-container" id="weekContainer"></div>
 
 <script>
 const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -132,7 +134,7 @@ function generateWeeks(numWeeks = 10) {
   const today = new Date();
   let currentMonday = new Date(today);
   const day = currentMonday.getDay();
-  const diff = (day === 0 ? -6 : 1 - day); // 0 = Sunday
+  const diff = (day === 0 ? -6 : 1 - day);
   currentMonday.setDate(currentMonday.getDate() + diff);
 
   for(let w=0; w<numWeeks; w++) {
@@ -171,57 +173,69 @@ function renderWeeks() {
   const todayStr = new Date().toDateString();
 
   weeks.forEach(week => {
-    const weekRow = document.createElement('div');
-    weekRow.className = 'week-row';
-
-    week.forEach(day => {
-      const dayCard = document.createElement('div');
-      dayCard.className = 'day-card';
-      if(day.toDateString() === todayStr) dayCard.classList.add('today');
-
-      // Header
-      const header = document.createElement('div');
-      header.className = 'day-header';
-      header.innerText = `${DAY_NAMES[day.getDay()===0?6:day.getDay()-1]} ${day.getDate()}/${day.getMonth()+1}`;
-      dayCard.appendChild(header);
-
-      // Task list
-      const taskList = document.createElement('ul');
-      taskList.className = 'task-list';
-      const dayKey = day.toDateString();
-      if(tasks[dayKey]) {
-        tasks[dayKey].forEach((task, i) => {
-          taskList.appendChild(createTaskItem(task, dayKey, i));
-        });
-      }
-      dayCard.appendChild(taskList);
-
-      // Add task input
-      const addDiv = document.createElement('div');
-      addDiv.className = 'add-task-input';
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = 'Add task...';
-      const button = document.createElement('button');
-      button.innerText = '+';
-      button.onclick = () => {
-        const value = input.value.trim();
-        if(value) {
-          if(!tasks[dayKey]) tasks[dayKey] = [];
-          tasks[dayKey].push({text:value, completed:false});
-          saveTasks(tasks);
-          renderWeeks();
-        }
-      };
-      addDiv.appendChild(input);
-      addDiv.appendChild(button);
-      dayCard.appendChild(addDiv);
-
-      weekRow.appendChild(dayCard);
+    // First row: Mon-Fri
+    const firstRow = document.createElement('div');
+    firstRow.className = 'week-row';
+    week.slice(0,5).forEach(day => {
+      firstRow.appendChild(createDayCard(day, tasks, todayStr));
     });
+    container.appendChild(firstRow);
 
-    container.appendChild(weekRow);
+    // Second row: Sat-Sun
+    const secondRow = document.createElement('div');
+    secondRow.className = 'week-row second-row';
+    week.slice(5,7).forEach(day => {
+      secondRow.appendChild(createDayCard(day, tasks, todayStr));
+    });
+    container.appendChild(secondRow);
   });
+}
+
+// Create a day card
+function createDayCard(day, tasks, todayStr) {
+  const dayCard = document.createElement('div');
+  dayCard.className = 'day-card';
+  if(day.toDateString() === todayStr) dayCard.classList.add('today');
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'day-header';
+  header.innerText = `${DAY_NAMES[day.getDay()===0?6:day.getDay()-1]} ${day.getDate()}/${day.getMonth()+1}`;
+  dayCard.appendChild(header);
+
+  // Task list
+  const taskList = document.createElement('ul');
+  taskList.className = 'task-list';
+  const dayKey = day.toDateString();
+  if(tasks[dayKey]) {
+    tasks[dayKey].forEach((task, i) => {
+      taskList.appendChild(createTaskItem(task, dayKey, i));
+    });
+  }
+  dayCard.appendChild(taskList);
+
+  // Add task input
+  const addDiv = document.createElement('div');
+  addDiv.className = 'add-task-input';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Add task...';
+  const button = document.createElement('button');
+  button.innerText = '+';
+  button.onclick = () => {
+    const value = input.value.trim();
+    if(value) {
+      if(!tasks[dayKey]) tasks[dayKey] = [];
+      tasks[dayKey].push({text:value, completed:false});
+      saveTasks(tasks);
+      renderWeeks();
+    }
+  };
+  addDiv.appendChild(input);
+  addDiv.appendChild(button);
+  dayCard.appendChild(addDiv);
+
+  return dayCard;
 }
 
 // Initial render
