@@ -5,15 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analog Weekly Planner</title>
 <style>
-/* Base & reset */
+/* Base styles */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
 html, body { height: 100%; width: 100%; }
 body { background: #f4f4f4; display: flex; flex-direction: column; padding: 20px; }
-
-/* Title */
 h2 { text-align: center; margin-bottom: 20px; }
 
-/* Week container (full width) */
+/* Week container */
 .week-container {
   display: flex;
   flex-direction: column;
@@ -28,24 +26,27 @@ h2 { text-align: center; margin-bottom: 20px; }
 .week-row {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 15px;
 }
 
-/* Day card */
+/* Day card - same as Today Tool style */
 .day-card {
   background: #fff;
-  padding: 20px;
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-size: 1px 28px; /* line height grid */
+  padding: 20px 15px;
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  width: 150px; 
+  width: 150px;  /* Fixed width like Today Tool */
+  height: 300px; /* Taller card to match Today Tool */
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   border-left: 5px solid transparent;
   flex-shrink: 0;
 }
 
-/* Today highlight */
+/* Highlight today */
 .day-card.today {
   border-left-color: #4CAF50;
 }
@@ -64,7 +65,7 @@ h2 { text-align: center; margin-bottom: 20px; }
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 300px;
+  flex: 1;
   overflow-y: auto;
 }
 
@@ -74,7 +75,7 @@ h2 { text-align: center; margin-bottom: 20px; }
   align-items: center;
   justify-content: space-between;
   background: #f9f9f9;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -84,7 +85,7 @@ h2 { text-align: center; margin-bottom: 20px; }
   opacity: 0.6;
 }
 
-/* Add task input */
+/* Add task input fits full card width */
 .add-task-input {
   display: flex;
   gap: 6px;
@@ -100,7 +101,7 @@ h2 { text-align: center; margin-bottom: 20px; }
 }
 
 .add-task-input button {
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: none;
   background: #4CAF50;
@@ -127,7 +128,7 @@ h2 { text-align: center; margin-bottom: 20px; }
 <script>
 const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-// Load tasks from localStorage
+// LocalStorage helpers
 function loadTasks() {
   const data = localStorage.getItem('weeklyTasks');
   return data ? JSON.parse(data) : {};
