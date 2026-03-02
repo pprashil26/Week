@@ -78,10 +78,11 @@ h2 { margin: 20px 0; text-align: center; }
   opacity: 0.6;
 }
 
-/* Task input */
+/* Add task input redesign */
 .add-task-input {
   display: flex;
   gap: 6px;
+  width: 100%;
 }
 
 .add-task-input input {
@@ -89,15 +90,17 @@ h2 { margin: 20px 0; text-align: center; }
   padding: 6px 10px;
   border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 13px;
 }
 
 .add-task-input button {
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 8px;
   border: none;
   background: #4CAF50;
   color: #fff;
   cursor: pointer;
+  font-size: 13px;
 }
 
 .add-task-input button:hover {
@@ -164,33 +167,6 @@ function createTaskItem(task, dayKey, index) {
   return li;
 }
 
-// Render all weeks
-function renderWeeks() {
-  const container = document.getElementById('weekContainer');
-  container.innerHTML = '';
-  const weeks = generateWeeks(20);
-  const tasks = loadTasks();
-  const todayStr = new Date().toDateString();
-
-  weeks.forEach(week => {
-    // First row: Mon-Fri
-    const firstRow = document.createElement('div');
-    firstRow.className = 'week-row';
-    week.slice(0,5).forEach(day => {
-      firstRow.appendChild(createDayCard(day, tasks, todayStr));
-    });
-    container.appendChild(firstRow);
-
-    // Second row: Sat-Sun
-    const secondRow = document.createElement('div');
-    secondRow.className = 'week-row second-row';
-    week.slice(5,7).forEach(day => {
-      secondRow.appendChild(createDayCard(day, tasks, todayStr));
-    });
-    container.appendChild(secondRow);
-  });
-}
-
 // Create a day card
 function createDayCard(day, tasks, todayStr) {
   const dayCard = document.createElement('div');
@@ -236,6 +212,33 @@ function createDayCard(day, tasks, todayStr) {
   dayCard.appendChild(addDiv);
 
   return dayCard;
+}
+
+// Render all weeks
+function renderWeeks() {
+  const container = document.getElementById('weekContainer');
+  container.innerHTML = '';
+  const weeks = generateWeeks(20);
+  const tasks = loadTasks();
+  const todayStr = new Date().toDateString();
+
+  weeks.forEach(week => {
+    // First row: Mon-Fri
+    const firstRow = document.createElement('div');
+    firstRow.className = 'week-row';
+    week.slice(0,5).forEach(day => {
+      firstRow.appendChild(createDayCard(day, tasks, todayStr));
+    });
+    container.appendChild(firstRow);
+
+    // Second row: Sat-Sun
+    const secondRow = document.createElement('div');
+    secondRow.className = 'week-row second-row';
+    week.slice(5,7).forEach(day => {
+      secondRow.appendChild(createDayCard(day, tasks, todayStr));
+    });
+    container.appendChild(secondRow);
+  });
 }
 
 // Initial render
