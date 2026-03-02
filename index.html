@@ -52,11 +52,27 @@ body { background: #f4f4f4; padding: 20px; display: flex; flex-direction: column
 .task-notes { font-size: 0.8rem; color: #555; margin-left: 24px; margin-top: 2px; white-space: pre-wrap; }
 
 /* Add task input */
-.add-task { display: flex; gap: 4px; margin-top: 8px; z-index: 1; position: relative; }
-.add-task input { flex: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-family: 'Inter', sans-serif; }
-.add-task button { padding: 6px 12px; border: none; border-radius: 6px; background: #333; color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; }
-.add-task button:hover { background: #555; }
+.add-task input { 
+  flex: 1; 
+  padding: 4px 6px;   /* reduced padding */
+  font-size: 0.85rem; /* slightly smaller font */
+  border: 1px solid #ccc; 
+  border-radius: 6px; 
+  font-family: 'Inter', sans-serif; 
+}
 
+.add-task button { 
+  padding: 4px 8px;   /* smaller button */
+  font-size: 0.85rem; /* match input */
+  border: none; 
+  border-radius: 6px; 
+  background: #333; 
+  color: #fff; 
+  cursor: pointer; 
+}
+.add-task button:hover { 
+  background: #555; 
+}
 /* Today highlight */
 .today-card { border: 2px solid #34c759; }
 
