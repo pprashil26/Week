@@ -5,250 +5,151 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analog Weekly Planner</title>
 <style>
-/* Base & reset */
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-html, body { height: 100%; width: 100%; }
-body { background: #f4f4f4; display: flex; flex-direction: column; padding: 20px; }
-h2 { text-align: center; margin-bottom: 20px; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+body { background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; gap: 40px; min-height: 100vh; }
 
 /* Week container */
-.week-container {
-  display: flex;
-  flex-direction: column;
-  gap: 50px;
-  width: 100%;
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: 20px;
-}
+.week-container { display: flex; flex-direction: column; gap: 40px; }
 
-/* Week row */
-.week-row {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
+/* Week row (Monday–Friday / Sat–Sun) */
+.week-row { display: flex; justify-content: center; gap: 20px; flex-wrap: nowrap; }
 
-/* Day card - wider for input box */
-.day-card {
-  background: #fff;
+/* Card styles identical to Today Tool */
+.card { 
+  width: 300px; 
+  height: 420px; 
+  border-radius: 12px; 
+  padding: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  position: relative; 
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12); 
+  overflow: hidden; 
+  background:#fff;
   background-image: linear-gradient(to bottom, rgba(0,0,0,0.08) 1px, transparent 1px);
-  background-size: 1px 28px;
-  padding: 20px 15px;
-  border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  width: 200px;  /* Wider card */
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  border-left: 5px solid transparent;
-  flex-shrink: 0;
+  background-size:1px 24px;
 }
 
-/* Highlight today */
-.day-card.today {
-  border-left-color: #4CAF50;
-}
-
-/* Day header */
-.day-header {
-  font-weight: bold;
-  font-size: 16px;
-  display: flex;
-  justify-content: space-between;
-}
+.card h2 { font-family: 'Patrick Hand', cursive; font-size: 1.05rem; color: #666; display: flex; justify-content: space-between; align-items: center; }
+.card h2 .first { font-weight: bold; }
+.card h2 .rest { opacity: 0.3; font-weight: normal; }
+#today-date { font-size: 0.8rem; color: #888; margin-left: 6px; }
 
 /* Task list */
-.task-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  overflow-y: auto;
-}
+.task-list { flex: 1; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.2) transparent; }
+.task-list::-webkit-scrollbar { width: 6px; }
+.task-list::-webkit-scrollbar-track { background: transparent; }
+.task-list::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 3px; }
 
-/* Task item */
-.task-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #f9f9f9;
-  padding: 6px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
+/* Task style */
+.task { display: flex; flex-direction: column; padding: 6px 4px; margin-bottom: 2px; cursor: pointer; }
+.task-top { display: flex; align-items: center; justify-content: space-between; }
+.circle { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #999; margin-right: 6px; flex-shrink: 0; display: inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; transition: all 0.2s ease; background: #fff; color: #333; }
+.circle.completed { background: #34c759; border: none; color: white; }
+.task-text { flex: 1; word-break: break-word; font-size: 0.9rem; font-family: 'Inter', sans-serif; }
+.task-text.completed { opacity: 0.65; text-decoration: line-through; text-decoration-thickness: 1px; text-decoration-color: #c7c7cc; transition: all 0.25s ease; }
+.task-notes { font-size: 0.8rem; color: #555; margin-left: 24px; margin-top: 2px; white-space: pre-wrap; }
 
-.task-item.completed {
-  text-decoration: line-through;
-  opacity: 0.6;
-}
+/* Add task input */
+.add-task { display: flex; gap: 4px; margin-top: 8px; z-index: 1; position: relative; }
+.add-task input { flex: 1; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-family: 'Inter', sans-serif; }
+.add-task button { padding: 6px 12px; border: none; border-radius: 6px; background: #333; color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; }
+.add-task button:hover { background: #555; }
 
-/* Add task input fits full card width */
-.add-task-input {
-  display: flex;
-  gap: 6px;
-  width: 100%;
-}
+/* Today highlight */
+.today-card { border: 2px solid #34c759; }
 
-.add-task-input input {
-  flex: 1;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
+/* Responsive */
+@media (max-width: 800px) { .week-row { flex-wrap: wrap; justify-content: center; } }
 
-.add-task-input button {
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  background: #4CAF50;
-  color: #fff;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.add-task-input button:hover {
-  background: #45a049;
-}
-
-/* Weekend row centering */
-.week-row.second-row {
-  justify-content: center;
-}
 </style>
 </head>
 <body>
 
-<h2>Analog Weekly Planner</h2>
-<div class="week-container" id="weekContainer"></div>
+<h2 style="text-align:center; margin-bottom:20px;">Analog Weekly Planner</h2>
+
+<div class="week-container" id="week-container"></div>
 
 <script>
-const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const storageKey='weeklyPlannerTasks';
+let weeks = JSON.parse(localStorage.getItem(storageKey)) || [];
 
-// LocalStorage helpers
-function loadTasks() {
-  const data = localStorage.getItem('weeklyTasks');
-  return data ? JSON.parse(data) : {};
+// generate 4 weeks if empty
+if(weeks.length===0){
+  for(let w=0; w<4; w++){
+    weeks.push({
+      days:[
+        {name:'Mon',tasks:[]},{name:'Tue',tasks:[]},{name:'Wed',tasks:[]},{name:'Thu',tasks:[]},{name:'Fri',tasks:[]},
+        {name:'Sat',tasks:[]},{name:'Sun',tasks:[]}
+      ]
+    });
+  }
 }
 
-function saveTasks(tasks) {
-  localStorage.setItem('weeklyTasks', JSON.stringify(tasks));
-}
+// Save
+function saveWeeks(){ localStorage.setItem(storageKey,JSON.stringify(weeks)); }
 
-// Generate weeks
-function generateWeeks(numWeeks = 10) {
-  const weeks = [];
+// Render
+function renderWeeks(){
+  const container = document.getElementById('week-container');
+  container.innerHTML='';
   const today = new Date();
-  let currentMonday = new Date(today);
-  const day = currentMonday.getDay();
-  const diff = (day === 0 ? -6 : 1 - day);
-  currentMonday.setDate(currentMonday.getDate() + diff);
+  const todayStr = today.toDateString();
 
-  for(let w=0; w<numWeeks; w++) {
-    const week = [];
-    for(let d=0; d<7; d++) {
-      const date = new Date(currentMonday);
-      date.setDate(currentMonday.getDate() + d + w*7);
-      week.push(date);
-    }
-    weeks.push(week);
-  }
-  return weeks;
-}
-
-// Create task item
-function createTaskItem(task, dayKey, index) {
-  const li = document.createElement('li');
-  li.className = 'task-item';
-  if(task.completed) li.classList.add('completed');
-  li.innerText = task.text;
-  li.onclick = () => {
-    const tasks = loadTasks();
-    tasks[dayKey][index].completed = !tasks[dayKey][index].completed;
-    saveTasks(tasks);
-    renderWeeks();
-  };
-  return li;
-}
-
-// Create a day card
-function createDayCard(day, tasks, todayStr) {
-  const dayCard = document.createElement('div');
-  dayCard.className = 'day-card';
-  if(day.toDateString() === todayStr) dayCard.classList.add('today');
-
-  // Header
-  const header = document.createElement('div');
-  header.className = 'day-header';
-  header.innerText = `${DAY_NAMES[day.getDay()===0?6:day.getDay()-1]} ${day.getDate()}/${day.getMonth()+1}`;
-  dayCard.appendChild(header);
-
-  // Task list
-  const taskList = document.createElement('ul');
-  taskList.className = 'task-list';
-  const dayKey = day.toDateString();
-  if(tasks[dayKey]) {
-    tasks[dayKey].forEach((task,i)=>{
-      taskList.appendChild(createTaskItem(task,dayKey,i));
-    });
-  }
-  dayCard.appendChild(taskList);
-
-  // Add task input
-  const addDiv = document.createElement('div');
-  addDiv.className = 'add-task-input';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'Add task...';
-  const button = document.createElement('button');
-  button.innerText = '+';
-  button.onclick = () => {
-    const value = input.value.trim();
-    if(value){
-      if(!tasks[dayKey]) tasks[dayKey]=[];
-      tasks[dayKey].push({text:value, completed:false});
-      saveTasks(tasks);
-      renderWeeks();
-    }
-  };
-  addDiv.appendChild(input);
-  addDiv.appendChild(button);
-  dayCard.appendChild(addDiv);
-
-  return dayCard;
-}
-
-// Render all weeks
-function renderWeeks() {
-  const container = document.getElementById('weekContainer');
-  container.innerHTML = '';
-  const weeks = generateWeeks(20);
-  const tasks = loadTasks();
-  const todayStr = new Date().toDateString();
-
-  weeks.forEach(week=>{
+  weeks.forEach((week,wIndex)=>{
     // First row: Mon-Fri
-    const firstRow = document.createElement('div');
-    firstRow.className='week-row';
-    week.slice(0,5).forEach(day=>{
-      firstRow.appendChild(createDayCard(day,tasks,todayStr));
+    const row1 = document.createElement('div'); row1.className='week-row';
+    weeks[wIndex].days.slice(0,5).forEach((day,dIndex)=>{
+      row1.appendChild(createDayCard(day,wIndex,dIndex,todayStr));
     });
-    container.appendChild(firstRow);
+    container.appendChild(row1);
 
     // Second row: Sat-Sun
-    const secondRow = document.createElement('div');
-    secondRow.className='week-row second-row';
-    week.slice(5,7).forEach(day=>{
-      secondRow.appendChild(createDayCard(day,tasks,todayStr));
+    const row2 = document.createElement('div'); row2.className='week-row';
+    weeks[wIndex].days.slice(5).forEach((day,dIndex)=>{
+      row2.appendChild(createDayCard(day,wIndex,dIndex+5,todayStr));
     });
-    container.appendChild(secondRow);
+    container.appendChild(row2);
   });
 }
 
-// Initial render
+// Create day card
+function createDayCard(day,wIndex,dIndex,todayStr){
+  const card = document.createElement('div');
+  card.className='card';
+  // highlight today
+  const cardDate = new Date();
+  cardDate.setDate(cardDate.getDate() + (wIndex*7 + dIndex - cardDate.getDay() +1));
+  if(cardDate.toDateString()===todayStr) card.classList.add('today-card');
+
+  const h2 = document.createElement('h2');
+  h2.textContent = day.name;
+  card.appendChild(h2);
+
+  const taskList = document.createElement('div'); taskList.className='task-list';
+  day.tasks.forEach((t,i)=>{
+    const tDiv = document.createElement('div'); tDiv.className='task';
+    const top = document.createElement('div'); top.className='task-top';
+    const left = document.createElement('div'); left.style.display='flex'; left.style.alignItems='center';
+    const circle = document.createElement('span'); circle.className='circle'; circle.textContent='•';
+    const text = document.createElement('span'); text.className='task-text'; text.textContent=t;
+    left.append(circle,text); top.append(left); taskList.append(tDiv); tDiv.append(top);
+  });
+  card.appendChild(taskList);
+
+  // Add task input
+  const addDiv = document.createElement('div'); addDiv.className='add-task';
+  const input = document.createElement('input'); input.placeholder='New task...';
+  const btn = document.createElement('button'); btn.textContent='Add';
+  btn.onclick = ()=>{ if(input.value.trim()!==''){ day.tasks.push(input.value.trim()); input.value=''; saveWeeks(); renderWeeks(); } };
+  input.addEventListener('keypress',e=>{ if(e.key==='Enter'){ btn.onclick(); } });
+  addDiv.append(input,btn);
+  card.appendChild(addDiv);
+
+  return card;
+}
+
 renderWeeks();
 </script>
 
