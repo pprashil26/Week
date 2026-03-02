@@ -5,41 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analog Weekly Planner</title>
 <style>
-/* Base styles */
+/* Base & reset */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-body { background: #f4f4f4; padding: 20px; }
-h2 { margin: 20px 0; text-align: center; }
+html, body { height: 100%; width: 100%; }
+body { background: #f4f4f4; display: flex; flex-direction: column; padding: 20px; }
 
-/* Week container */
+/* Title */
+h2 { text-align: center; margin-bottom: 20px; }
+
+/* Week container (full width) */
 .week-container {
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  max-width: 900px;
-  margin: 0 auto;
+  gap: 50px;
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
 }
 
-/* Week rows */
+/* Week row */
 .week-row {
   display: flex;
-  gap: 10px;
   justify-content: center;
+  gap: 20px;
 }
 
 /* Day card */
 .day-card {
   background: #fff;
-  padding: 15px;
+  padding: 20px;
   border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  width: 130px;  /* Fixed width like Today Tool */
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  width: 150px; 
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  border-left: 4px solid transparent;
+  gap: 12px;
+  border-left: 5px solid transparent;
+  flex-shrink: 0;
 }
 
-/* Highlight today */
+/* Today highlight */
 .day-card.today {
   border-left-color: #4CAF50;
 }
@@ -47,7 +53,7 @@ h2 { margin: 20px 0; text-align: center; }
 /* Day header */
 .day-header {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 16px;
   display: flex;
   justify-content: space-between;
 }
@@ -57,8 +63,8 @@ h2 { margin: 20px 0; text-align: center; }
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 200px;
+  gap: 8px;
+  max-height: 300px;
   overflow-y: auto;
 }
 
@@ -68,7 +74,7 @@ h2 { margin: 20px 0; text-align: center; }
   align-items: center;
   justify-content: space-between;
   background: #f9f9f9;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -78,7 +84,7 @@ h2 { margin: 20px 0; text-align: center; }
   opacity: 0.6;
 }
 
-/* Add task input redesign */
+/* Add task input */
 .add-task-input {
   display: flex;
   gap: 6px;
@@ -87,27 +93,27 @@ h2 { margin: 20px 0; text-align: center; }
 
 .add-task-input input {
   flex: 1;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .add-task-input button {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
   border: none;
   background: #4CAF50;
   color: #fff;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .add-task-input button:hover {
   background: #45a049;
 }
 
-/* Center Saturday & Sunday */
+/* Weekend row centering */
 .week-row.second-row {
   justify-content: center;
 }
@@ -121,7 +127,7 @@ h2 { margin: 20px 0; text-align: center; }
 <script>
 const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-// LocalStorage helpers
+// Load tasks from localStorage
 function loadTasks() {
   const data = localStorage.getItem('weeklyTasks');
   return data ? JSON.parse(data) : {};
@@ -131,7 +137,7 @@ function saveTasks(tasks) {
   localStorage.setItem('weeklyTasks', JSON.stringify(tasks));
 }
 
-// Generate weeks starting from current week
+// Generate weeks
 function generateWeeks(numWeeks = 10) {
   const weeks = [];
   const today = new Date();
@@ -184,8 +190,8 @@ function createDayCard(day, tasks, todayStr) {
   taskList.className = 'task-list';
   const dayKey = day.toDateString();
   if(tasks[dayKey]) {
-    tasks[dayKey].forEach((task, i) => {
-      taskList.appendChild(createTaskItem(task, dayKey, i));
+    tasks[dayKey].forEach((task,i)=>{
+      taskList.appendChild(createTaskItem(task,dayKey,i));
     });
   }
   dayCard.appendChild(taskList);
@@ -200,8 +206,8 @@ function createDayCard(day, tasks, todayStr) {
   button.innerText = '+';
   button.onclick = () => {
     const value = input.value.trim();
-    if(value) {
-      if(!tasks[dayKey]) tasks[dayKey] = [];
+    if(value){
+      if(!tasks[dayKey]) tasks[dayKey]=[];
       tasks[dayKey].push({text:value, completed:false});
       saveTasks(tasks);
       renderWeeks();
@@ -222,20 +228,20 @@ function renderWeeks() {
   const tasks = loadTasks();
   const todayStr = new Date().toDateString();
 
-  weeks.forEach(week => {
+  weeks.forEach(week=>{
     // First row: Mon-Fri
     const firstRow = document.createElement('div');
-    firstRow.className = 'week-row';
-    week.slice(0,5).forEach(day => {
-      firstRow.appendChild(createDayCard(day, tasks, todayStr));
+    firstRow.className='week-row';
+    week.slice(0,5).forEach(day=>{
+      firstRow.appendChild(createDayCard(day,tasks,todayStr));
     });
     container.appendChild(firstRow);
 
     // Second row: Sat-Sun
     const secondRow = document.createElement('div');
-    secondRow.className = 'week-row second-row';
-    week.slice(5,7).forEach(day => {
-      secondRow.appendChild(createDayCard(day, tasks, todayStr));
+    secondRow.className='week-row second-row';
+    week.slice(5,7).forEach(day=>{
+      secondRow.appendChild(createDayCard(day,tasks,todayStr));
     });
     container.appendChild(secondRow);
   });
