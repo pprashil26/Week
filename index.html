@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Planner</title>
+<style>
+/* Reset & base styles */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+body { background: #f4f4f4; padding: 20px; }
+h2 { margin: 20px 0 10px 0; }
+
+/* Week container */
+.week-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Day card */
+.day-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-left: 4px solid transparent;
+}
+
+.day-card.today {
+  border-left-color: #4CAF50; /* Highlight today */
+}
+
+/* Day header */
+.day-header {
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+}
+
+/* Task list */
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Task item */
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f9f9f9;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.task-item.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Task input */
+.add-task-input {
+  display: flex;
+  gap: 6px;
+}
+
+.add-task-input input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.add-task-input button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #4CAF50;
+  color: #fff;
+  cursor: pointer;
+}
+
+.add-task-input button:hover {
+  background: #45a049;
+}
+</style>
+</head>
+<body>
+
+<h2>Weekly Planner</h2>
+<div class="week-container" id="weekContainer">
+  <!-- Weeks and day cards will be rendered here -->
+</div>
+
+<script>
+// Utility functions
+const MS_IN_DAY = 24*60*60*1000;
+const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+// Load tasks from localStorage
+function loadTasks() {
+  const data = localStorage.getItem('weeklyTasks');
+  return data ? JSON.parse(data) : {};
+}
+
+// Save tasks to localStorage
+function saveTasks(tasks) {
+  localStorage.setItem('weeklyTasks', JSON.stringify(tasks));
+}
+
+// Generate weeks
+function generateWeeks(numWeeks = 10) {
+  const weeks = [];
+  const today = new Date();
+  // Start from the Monday of current week
+  let currentMonday = new Date(today);
+  const day = currentMonday.getDay();
+  const diff = (day === 0 ? -6 : 1 - day); // 0 = Sunday
+  currentMonday.setDate(currentMonday.getDate() + diff);
+
+  for(let w=0; w<numWeeks; w++) {
+    const week = [];
+    for(let d=0; d<7; d++) {
+      const date = new Date(currentMonday);
+      date.setDate(currentMonday.getDate() + d + w*7);
+      week.push(date);
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+// Render weeks and day cards
+function renderWeeks() {
+  const container = document.getElementById('weekContainer');
+  container.innerHTML = '';
+  const weeks = generateWeeks(20); // 20 weeks forward
+  const tasks = loadTasks();
+  const todayStr = new Date().toDateString();
+
+  weeks.forEach(week => {
+    week.forEach(day => {
+      const dayCard = document.createElement('div');
+      dayCard.className = 'day-card';
+      if(day.toDateString() === todayStr) dayCard.classList.add('today');
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'day-header';
+      header.innerText = `${DAY_NAMES[day.getDay()===0?6:day.getDay()-1]} ${day.getDate()}/${day.getMonth()+1}`;
+      dayCard.appendChild(header);
+
+      // Task list
+      const taskList = document.createElement('ul');
+      taskList.className = 'task-list';
+      const dayKey = day.toDateString();
+      if(tasks[dayKey]) {
+        tasks[dayKey].forEach((task, i) => {
+          const li = createTaskItem(task, dayKey, i);
+          taskList.appendChild(li);
+        });
+      }
+      dayCard.appendChild(taskList);
+
+      // Add task input
+      const addDiv = document.createElement('div');
+      addDiv.className = 'add-task-input';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'Add task...';
+      const button = document.createElement('button');
+      button.innerText = '+';
+      button.onclick = () => {
+        const value = input.value.trim();
+        if(value) {
+          if(!tasks[dayKey]) tasks[dayKey] = [];
+          tasks[dayKey].push({text:value, completed:false});
+          saveTasks(tasks);
+          renderWeeks();
+        }
+      };
+      addDiv.appendChild(input);
+      addDiv.appendChild(button);
+      dayCard.appendChild(addDiv);
+
+      container.appendChild(dayCard);
+    });
+  });
+}
+
+// Create a task list item
+function createTaskItem(task, dayKey, index) {
+  const li = document.createElement('li');
+  li.className = 'task-item';
+  if(task.completed) li.classList.add('completed');
+  li.innerText = task.text;
+  li.onclick = () => {
+    const tasks = loadTasks();
+    tasks[dayKey][index].completed = !tasks[dayKey][index].completed;
+    saveTasks(tasks);
+    renderWeeks();
+  };
+  return li;
+}
+
+// Initial render
+renderWeeks();
+</script>
+</body>
+</html>
