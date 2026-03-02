@@ -8,15 +8,23 @@
 /* Reset & base styles */
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
 body { background: #f4f4f4; padding: 20px; }
-h2 { margin: 20px 0 10px 0; }
+h2 { margin: 20px 0; text-align: center; }
 
 /* Week container */
 .week-container {
   display: flex;
   flex-direction: column;
   gap: 30px;
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
+}
+
+/* Single week row */
+.week-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
 }
 
 /* Day card */
@@ -25,10 +33,12 @@ h2 { margin: 20px 0 10px 0; }
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  min-width: 130px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   border-left: 4px solid transparent;
+  flex-shrink: 0;
 }
 
 .day-card.today {
@@ -40,7 +50,7 @@ h2 { margin: 20px 0 10px 0; }
   font-weight: bold;
   display: flex;
   justify-content: space-between;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /* Task list */
@@ -49,6 +59,8 @@ h2 { margin: 20px 0 10px 0; }
   display: flex;
   flex-direction: column;
   gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 /* Task item */
@@ -98,30 +110,26 @@ h2 { margin: 20px 0 10px 0; }
 
 <h2>Weekly Planner</h2>
 <div class="week-container" id="weekContainer">
-  <!-- Weeks and day cards will be rendered here -->
+  <!-- Weeks will be rendered here -->
 </div>
 
 <script>
-// Utility functions
-const MS_IN_DAY = 24*60*60*1000;
 const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-// Load tasks from localStorage
+// LocalStorage helpers
 function loadTasks() {
   const data = localStorage.getItem('weeklyTasks');
   return data ? JSON.parse(data) : {};
 }
 
-// Save tasks to localStorage
 function saveTasks(tasks) {
   localStorage.setItem('weeklyTasks', JSON.stringify(tasks));
 }
 
-// Generate weeks
+// Generate weeks starting from current week
 function generateWeeks(numWeeks = 10) {
   const weeks = [];
   const today = new Date();
-  // Start from the Monday of current week
   let currentMonday = new Date(today);
   const day = currentMonday.getDay();
   const diff = (day === 0 ? -6 : 1 - day); // 0 = Sunday
@@ -139,15 +147,33 @@ function generateWeeks(numWeeks = 10) {
   return weeks;
 }
 
-// Render weeks and day cards
+// Create task item
+function createTaskItem(task, dayKey, index) {
+  const li = document.createElement('li');
+  li.className = 'task-item';
+  if(task.completed) li.classList.add('completed');
+  li.innerText = task.text;
+  li.onclick = () => {
+    const tasks = loadTasks();
+    tasks[dayKey][index].completed = !tasks[dayKey][index].completed;
+    saveTasks(tasks);
+    renderWeeks();
+  };
+  return li;
+}
+
+// Render all weeks
 function renderWeeks() {
   const container = document.getElementById('weekContainer');
   container.innerHTML = '';
-  const weeks = generateWeeks(20); // 20 weeks forward
+  const weeks = generateWeeks(20);
   const tasks = loadTasks();
   const todayStr = new Date().toDateString();
 
   weeks.forEach(week => {
+    const weekRow = document.createElement('div');
+    weekRow.className = 'week-row';
+
     week.forEach(day => {
       const dayCard = document.createElement('div');
       dayCard.className = 'day-card';
@@ -165,8 +191,7 @@ function renderWeeks() {
       const dayKey = day.toDateString();
       if(tasks[dayKey]) {
         tasks[dayKey].forEach((task, i) => {
-          const li = createTaskItem(task, dayKey, i);
-          taskList.appendChild(li);
+          taskList.appendChild(createTaskItem(task, dayKey, i));
         });
       }
       dayCard.appendChild(taskList);
@@ -192,28 +217,16 @@ function renderWeeks() {
       addDiv.appendChild(button);
       dayCard.appendChild(addDiv);
 
-      container.appendChild(dayCard);
+      weekRow.appendChild(dayCard);
     });
-  });
-}
 
-// Create a task list item
-function createTaskItem(task, dayKey, index) {
-  const li = document.createElement('li');
-  li.className = 'task-item';
-  if(task.completed) li.classList.add('completed');
-  li.innerText = task.text;
-  li.onclick = () => {
-    const tasks = loadTasks();
-    tasks[dayKey][index].completed = !tasks[dayKey][index].completed;
-    saveTasks(tasks);
-    renderWeeks();
-  };
-  return li;
+    container.appendChild(weekRow);
+  });
 }
 
 // Initial render
 renderWeeks();
 </script>
+
 </body>
 </html>
